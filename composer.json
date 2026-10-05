@@ -1,0 +1,70 @@
+{
+  "name": "fixwire/laravel",
+  "description": "Fixwire for Laravel: errors, traces, queue jobs, scheduled tasks and release health",
+  "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "fixwire",
+    "laravel",
+    "errors",
+    "exceptions",
+    "tracing",
+    "opentelemetry",
+    "monitoring"
+  ],
+  "require": {
+    "php": ">=8.2",
+    "fixwire/fixwire": "^0.1",
+    "illuminate/contracts": "^11.0 || ^12.0 || ^13.0",
+    "illuminate/support": "^11.0 || ^12.0 || ^13.0"
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.64",
+    "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
+    "phpstan/phpstan": "^2.1",
+    "phpunit/phpunit": "^11.5 || ^12.0"
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/fixwire/fixwire-php"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Fixwire\\Laravel\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Fixwire\\Laravel\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Fixwire\\Laravel\\FixwireServiceProvider"
+      ]
+    }
+  },
+  "scripts": {
+    "test": "phpunit",
+    "analyse": "phpstan analyse",
+    "format": [
+      "@putenv PHP_CS_FIXER_IGNORE_ENV=1",
+      "php-cs-fixer fix"
+    ],
+    "check-format": [
+      "@putenv PHP_CS_FIXER_IGNORE_ENV=1",
+      "php-cs-fixer fix --dry-run --diff"
+    ]
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "homepage": "https://fixwire.io",
+  "support": {
+    "issues": "https://github.com/fixwire/fixwire-laravel/issues",
+    "source": "https://github.com/fixwire/fixwire-laravel"
+  }
+}
