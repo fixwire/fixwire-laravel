@@ -14,7 +14,7 @@
   ],
   "require": {
     "php": ">=8.2",
-    "fixwire/fixwire": "^0.1",
+    "fixwire/fixwire": "^0.1.1",
     "illuminate/contracts": "^11.0 || ^12.0 || ^13.0",
     "illuminate/support": "^11.0 || ^12.0 || ^13.0"
   },

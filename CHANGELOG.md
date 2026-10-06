@@ -4,7 +4,7 @@ All notable changes to Fixwire for Laravel are listed here. Versions follow [Sem
 Versioning](https://semver.org); before 1.0, a minor version may change the
 API.
 
-## [Unreleased]
+## [0.1.1] - 2026-10-06
 
 - A malformed DSN or an unknown option in `config/fixwire.php` no longer stops the app from booting: it is said on PHP's error log and Fixwire stays off.
 - `trace_propagation_targets` in `config/fixwire.php` are URL prefixes or hosts with their subdomains (fixwire/fixwire's rules), and the SDK's limits (`max_value_length`, `max_stack_frames`) can be set there.
