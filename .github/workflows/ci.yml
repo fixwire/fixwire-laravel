@@ -8,6 +8,11 @@ on:
 permissions:
   contents: read
 
+# bash on Windows too: cmd.exe, which runs composer.bat, takes the ^ of a constraint for an escape.
+defaults:
+  run:
+    shell: bash
+
 jobs:
   test:
     name: Laravel ${{ matrix.laravel }}, PHP ${{ matrix.php }}${{ matrix.os && format(', {0}', matrix.os) || '' }}
@@ -29,7 +34,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: curl, mbstring, zlib, pdo_sqlite
+          extensions: curl, fileinfo, mbstring, zlib, pdo_sqlite
           coverage: none
           tools: composer:v2
       # Laravel 11 is past its security support and each of its releases has published advisories,
@@ -63,7 +68,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: "8.5"
-          extensions: curl, mbstring, zlib, pdo_sqlite
+          extensions: curl, fileinfo, mbstring, zlib, pdo_sqlite
           coverage: none
           tools: composer:v2
       - run: composer install --no-progress
