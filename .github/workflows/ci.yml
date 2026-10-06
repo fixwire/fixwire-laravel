@@ -43,6 +43,10 @@ jobs:
       - name: allow Laravel 11's releases
         if: matrix.laravel == '11'
         run: composer config --global audit.block-insecure false
+      # The package is built next to the core's main branch, so it is tested against it; the
+      # version it requires (^0.1) is what a release of both pins.
+      - name: the core's main branch
+        run: composer require --no-update "fixwire/fixwire:dev-main as 0.1.99"
       - name: install, on Laravel ${{ matrix.laravel }}
         run: >-
           composer update --no-progress
