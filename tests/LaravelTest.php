@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Orchestra\Testbench\Attributes\DefineEnvironment;
 use Orchestra\Testbench\TestCase;
 
 final class ReserveStock implements ShouldQueue
@@ -46,12 +47,29 @@ final class LaravelTest extends TestCase
 {
     private FakeIngest $ingest;
 
+    private string $dsn = 'http://publickey@ingest.test';
+
+    /** Where PHP's error log goes while a test reads it, and where it went before. */
+    private ?string $errorLog = null;
+
+    private string|false $previousErrorLog = false;
+
     protected function setUp(): void
     {
         Hub::setCurrent(new Hub()); // a fresh scope for each app
         Client::resetRateLimits();
         $this->ingest = new FakeIngest();
         parent::setUp();
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        if ($this->errorLog !== null) {
+            ini_set('error_log', $this->previousErrorLog === false ? '' : $this->previousErrorLog);
+            unlink($this->errorLog);
+            $this->errorLog = null;
+        }
     }
 
     protected function getPackageProviders($app): array
@@ -62,7 +80,7 @@ final class LaravelTest extends TestCase
     protected function defineEnvironment($app): void
     {
         $app['config']->set('app.name', 'Shop API');
-        $app['config']->set('fixwire.dsn', 'http://publickey@ingest.test');
+        $app['config']->set('fixwire.dsn', $this->dsn);
         $app['config']->set('fixwire.release', 'shop@1.0.0');
         $app['config']->set('fixwire.traces_sample_rate', 1.0);
         $app['config']->set('fixwire.auto_session_tracking', true);
@@ -142,6 +160,28 @@ final class LaravelTest extends TestCase
         $sessions = $this->ingest->bodies('/v1/sessions');
         self::assertSame(1, $sessions[0]['aggregates'][0]['crashed'] ?? 0);
         self::assertNotEmpty($sessions[0]['aggregates'][0]['did'] ?? null, 'the signed-in user');
+    }
+
+    #[DefineEnvironment('breakTheConfiguration')]
+    public function testABrokenConfigurationLeavesFixwireOffAndTheAppRunning(): void
+    {
+        self::assertFalse(Hub::current()->getClient()?->isEnabled() ?? true);
+        $this->get('/orders/7')->assertStatus(500);
+        self::assertSame([], $this->ingest->received);
+        self::assertStringContainsString(
+            "fixwire: nothing is sent: no option 'sample_rat'; the DSN must look like https://<key>@<host>",
+            (string) file_get_contents((string) $this->errorLog),
+        );
+    }
+
+    /** @param \Illuminate\Foundation\Application $app */
+    protected function breakTheConfiguration($app): void
+    {
+        $this->dsn = 'ingest.test'; // whether defineEnvironment runs before or after this
+        $app['config']->set('fixwire.dsn', $this->dsn);
+        $app['config']->set('fixwire.sample_rat', 0.5);
+        $this->errorLog = (string) tempnam(sys_get_temp_dir(), 'fixwire-log');
+        $this->previousErrorLog = ini_set('error_log', $this->errorLog);
     }
 
     public function testKnowsTheUserOfAnApiGuard(): void

@@ -6,6 +6,7 @@ API.
 
 ## [Unreleased]
 
+- A malformed DSN or an unknown option in `config/fixwire.php` no longer stops the app from booting: it is said on PHP's error log and Fixwire stays off.
 - `trace_propagation_targets` in `config/fixwire.php` are URL prefixes or hosts with their subdomains (fixwire/fixwire's rules), and the SDK's limits (`max_value_length`, `max_stack_frames`) can be set there.
 
 ## [0.1.0] - 2026-10-06
