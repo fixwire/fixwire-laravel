@@ -49,12 +49,12 @@ final class ExampleTest extends TestCase
         $base = "http://127.0.0.1:{$port}";
         $json = ['Accept: application/json', 'Content-Type: application/json'];
 
-        self::assertSame(200, $this->http('GET', "{$base}/orders/7", null, $json)[0]);
-        self::assertSame(401, $this->http('POST', "{$base}/orders", '{"sku":"sku_1","card":"4242424242424242"}', $json)[0]);
-        self::assertSame(422, $this->http('POST', "{$base}/orders", '{"sku":"sku_1"}', [...$json, 'X-User-Id: user-1'])[0]);
-        self::assertSame(201, $this->http('POST', "{$base}/orders", '{"sku":"sku_1","card":"4242424242424242"}', [...$json, 'X-User-Id: user-1'])[0]);
-        self::assertSame(402, $this->http('POST', "{$base}/orders", '{"sku":"sku_2","card":"4000000000000002"}', [...$json, 'X-User-Id: user-2'])[0]);
-        self::assertSame(500, $this->http('GET', "{$base}/admin/report", null, $json)[0]);
+        $this->assertAnswered(200, $this->http('GET', "{$base}/orders/7", null, $json));
+        $this->assertAnswered(401, $this->http('POST', "{$base}/orders", '{"sku":"sku_1","card":"4242424242424242"}', $json));
+        $this->assertAnswered(422, $this->http('POST', "{$base}/orders", '{"sku":"sku_1"}', [...$json, 'X-User-Id: user-1']));
+        $this->assertAnswered(201, $this->http('POST', "{$base}/orders", '{"sku":"sku_1","card":"4242424242424242"}', [...$json, 'X-User-Id: user-1']));
+        $this->assertAnswered(402, $this->http('POST', "{$base}/orders", '{"sku":"sku_2","card":"4000000000000002"}', [...$json, 'X-User-Id: user-2']));
+        $this->assertAnswered(500, $this->http('GET', "{$base}/admin/report", null, $json));
         $requests = $this->received(14); // a trace and a session per request, the two errors
 
         $events = $this->events($requests);

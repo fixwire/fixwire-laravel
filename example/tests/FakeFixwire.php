@@ -46,6 +46,27 @@ trait FakeFixwire
     /**
      * @param list<array<string, mixed>> $requests
      *
+     * @return list<array<string, mixed>>
+     */
+    private function allEvents(array $requests): array
+    {
+        $out = [];
+        foreach ($requests as $r) {
+            foreach ($r['body']['resourceLogs'] ?? [] as $rl) {
+                foreach ($rl['scopeLogs'] as $sl) {
+                    foreach ($sl['logRecords'] as $rec) {
+                        $out[] = self::kv($rec['attributes']);
+                    }
+                }
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param list<array<string, mixed>> $requests
+     *
      * @return array<string, array<string, mixed>> by exception type
      */
     private function events(array $requests): array
@@ -132,6 +153,26 @@ trait FakeFixwire
             \array_key_exists('kvlistValue', $v) => self::kv($v['kvlistValue']['values'] ?? []),
             default => null,
         };
+    }
+
+    /**
+     * Fails with what the app answered and what it reported, when the status isn't the one expected.
+     *
+     * @param array{int, string} $answer
+     */
+    private function assertAnswered(int $status, array $answer): void
+    {
+        if ($answer[0] === $status) {
+            $this->addToAssertionCount(1);
+
+            return;
+        }
+        usleep(500_000); // the app sends what it captured once it has answered
+        $reported = [];
+        foreach ($this->allEvents($this->received(0)) as $event) {
+            $reported[] = ($event['exception.type'] ?? 'message') . ': ' . ($event['exception.message'] ?? '');
+        }
+        self::fail("answered {$answer[0]}, not {$status}: " . substr($answer[1], 0, 500) . "\nreported: " . implode("\n          ", $reported));
     }
 
     /**
