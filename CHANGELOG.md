@@ -4,6 +4,10 @@ All notable changes to Fixwire for Laravel are listed here. Versions follow [Sem
 Versioning](https://semver.org); before 1.0, a minor version may change the
 API.
 
+## [Unreleased]
+
+- `trace_propagation_targets` in `config/fixwire.php` are URL prefixes or hosts with their subdomains (fixwire/fixwire's rules), and the SDK's limits (`max_value_length`, `max_stack_frames`) can be set there.
+
 ## [0.1.0] - 2026-10-06
 
 First release.

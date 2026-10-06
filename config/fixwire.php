@@ -18,7 +18,8 @@ return [
     // The share of new traces kept: 0 for none, 1 for all.
     'traces_sample_rate' => (float) env('FIXWIRE_TRACES_SAMPLE_RATE', 0.0),
 
-    // URLs outgoing requests carry trace headers to (those holding one of these).
+    // Where outgoing requests carry trace headers: a URL prefix (https://api.example.com/v2), or a
+    // host (with a port if it has one) and its subdomains (example.com matches api.example.com).
     'trace_propagation_targets' => [],
 
     // A session per request, for crash-free sessions and users per release. It costs one more
