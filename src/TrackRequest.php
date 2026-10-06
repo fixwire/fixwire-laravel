@@ -20,6 +20,9 @@ final class TrackRequest
 {
     private bool $pushed = false;
 
+    /** Requests this process served: under Octane, many. */
+    private static int $served = 0;
+
     public function __construct(private Auth $auth) {}
 
     public function handle(Request $request, \Closure $next): mixed
@@ -31,6 +34,10 @@ final class TrackRequest
         }
         $scope = $hub->pushScope();
         $this->pushed = true;
+        if (self::$served++ > 0) {
+            // What happened while the worker booted belongs to its first request only.
+            $scope->clearBreadcrumbs();
+        }
         // Whoever the app's authentication finds, with any guard that remembers its user.
         $auth = $this->auth;
         $pii = $client->options()->sendDefaultPii;

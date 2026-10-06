@@ -50,7 +50,10 @@ php artisan vendor:publish --tag=fixwire-config   # config/fixwire.php
   more request to Fixwire per request, so it is off.
 
 What was captured is sent at the end of the request, in the middleware's
-`terminate`: under PHP-FPM, after the response has gone out.
+`terminate`: under PHP-FPM, after the response has gone out. Under Octane,
+where one worker serves request after request, each request still has its
+own scope, user and breadcrumbs, and is sent when it ends. The example's
+`OctaneTest` drives Octane's own worker loop to check that.
 
 ## Scheduled tasks
 
