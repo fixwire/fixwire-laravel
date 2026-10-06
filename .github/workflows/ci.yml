@@ -30,6 +30,12 @@ jobs:
           extensions: curl, mbstring, zlib, pdo_sqlite
           coverage: none
           tools: composer:v2
+      # Laravel 11 is past its security support and each of its releases has published advisories,
+      # which Composer refuses by default. Apps still run it, so the package supports it, and CI
+      # installs it to test that (nothing here is deployed).
+      - name: allow Laravel 11's releases
+        if: matrix.laravel == '11'
+        run: composer config --global audit.block-insecure false
       - name: install, on Laravel ${{ matrix.laravel }}
         run: >-
           composer update --no-progress
