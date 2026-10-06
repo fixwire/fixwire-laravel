@@ -10,8 +10,8 @@ permissions:
 
 jobs:
   test:
-    name: Laravel ${{ matrix.laravel }}, PHP ${{ matrix.php }}
-    runs-on: ubuntu-latest
+    name: Laravel ${{ matrix.laravel }}, PHP ${{ matrix.php }}${{ matrix.os && format(', {0}', matrix.os) || '' }}
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
@@ -22,6 +22,8 @@ jobs:
           - { laravel: "12", testbench: "10", php: "8.5" }
           - { laravel: "13", testbench: "11", php: "8.3" }
           - { laravel: "13", testbench: "11", php: "8.5" }
+          - { laravel: "13", testbench: "11", php: "8.5", os: macos-latest }
+          - { laravel: "13", testbench: "11", php: "8.5", os: windows-latest }
     steps:
       - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
@@ -47,8 +49,12 @@ jobs:
       - run: composer test
 
   example:
-    name: example app against a fake ingest (also under Octane)
-    runs-on: ubuntu-latest
+    name: example app against a fake ingest (also under Octane), ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
     defaults:
       run:
         working-directory: example
