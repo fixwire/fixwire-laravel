@@ -18,6 +18,9 @@ trait FakeFixwire
 
     private string $ingest = '';
 
+    /** @var array<string, string> each server's output, by its script */
+    private array $serverLogs = [];
+
     private function stopServers(): void
     {
         foreach ($this->servers as $server) {
@@ -172,7 +175,7 @@ trait FakeFixwire
         foreach ($this->allEvents($this->received(0)) as $event) {
             $reported[] = ($event['exception.type'] ?? 'message') . ': ' . ($event['exception.message'] ?? '');
         }
-        self::fail("answered {$answer[0]}, not {$status}: " . substr($answer[1], 0, 500) . "\nreported: " . implode("\n          ", $reported));
+        self::fail("answered {$answer[0]}, not {$status}: " . substr($answer[1], 0, 500) . "\nreported: " . implode("\n          ", $reported) . "\n" . $this->serverLogs());
     }
 
     /**
@@ -216,12 +219,13 @@ trait FakeFixwire
         $port = (int) substr((string) strrchr((string) stream_socket_get_name($probe, false), ':'), 1);
         fclose($probe);
         $null = \PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null';
+        $log = $this->serverLogs[basename(end($args))] = $this->tempFile(); // for a failing test to show
         $server = proc_open(
             [\PHP_BINARY, ...array_map(static fn(string $a): string => \sprintf($a, $port), $args)],
-            [0 => ['file', $null, 'r'], 1 => ['file', $null, 'w'], 2 => ['file', $null, 'w']],
+            [0 => ['file', $null, 'r'], 1 => ['file', $log, 'w'], 2 => ['file', $log, 'w']],
             $pipes,
             \dirname(__DIR__),
-            $env + getenv(),
+            $env + ['FIXWIRE_DEBUG' => '1'] + getenv(),
         );
         self::assertIsResource($server);
         $this->servers[] = $server;
@@ -260,7 +264,23 @@ trait FakeFixwire
             usleep(50_000);
         }
         usleep(300_000); // anything after it, too
+        $got = $read();
+        if (\count($got) < $count) {
+            self::fail(\sprintf("Fixwire got %d requests, not %d: %s\n%s", \count($got), $count, implode(', ', array_column($got, 'path')), $this->serverLogs()));
+        }
 
-        return $read();
+        return $got;
+    }
+
+    /** The tail of each server's output: requests, and what the SDK logged (FIXWIRE_DEBUG). */
+    private function serverLogs(): string
+    {
+        $out = '';
+        foreach ($this->serverLogs as $name => $file) {
+            $lines = \array_slice(explode("\n", trim((string) file_get_contents($file))), -40);
+            $out .= "--- {$name}\n" . implode("\n", $lines) . "\n";
+        }
+
+        return $out;
     }
 }
