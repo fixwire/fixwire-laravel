@@ -1,5 +1,7 @@
 # Fixwire for Laravel
 
+[![CI](https://github.com/fixwire/fixwire-laravel/actions/workflows/ci.yml/badge.svg)](https://github.com/fixwire/fixwire-laravel/actions/workflows/ci.yml)
+
 Fixwire in a Laravel 11, 12 or 13 app (PHP 8.2+): the exceptions Laravel
 reports, each request as a trace named after its route, the signed-in user,
 queue jobs, scheduled tasks as cron monitors, and release health. It builds

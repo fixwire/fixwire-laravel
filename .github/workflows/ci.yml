@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Laravel ${{ matrix.laravel }}, PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { laravel: "11", testbench: "9", php: "8.2" }
+          - { laravel: "11", testbench: "9", php: "8.4" }
+          - { laravel: "12", testbench: "10", php: "8.2" }
+          - { laravel: "12", testbench: "10", php: "8.5" }
+          - { laravel: "13", testbench: "11", php: "8.3" }
+          - { laravel: "13", testbench: "11", php: "8.5" }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, mbstring, zlib, pdo_sqlite
+          coverage: none
+          tools: composer:v2
+      - name: install, on Laravel ${{ matrix.laravel }}
+        run: >-
+          composer update --no-progress
+          --with "illuminate/contracts:^${{ matrix.laravel }}.0"
+          --with "illuminate/support:^${{ matrix.laravel }}.0"
+          --with "orchestra/testbench:^${{ matrix.testbench }}.0"
+      - run: composer check-format
+      - run: composer analyse
+      - run: composer test
+
+  example:
+    name: example app against a fake ingest (also under Octane)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: example
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.5"
+          extensions: curl, mbstring, zlib, pdo_sqlite
+          coverage: none
+          tools: composer:v2
+      - run: composer install --no-progress
+      - run: vendor/bin/phpunit
